@@ -15,17 +15,22 @@ __author__ = 'jackie'
 import sys
 import re
 import time
+import json
 import logging.handlers
 from PyQt5.QtWidgets import QApplication, QMainWindow, QStyleFactory, QWidget, QPushButton, QMessageBox, QInputDialog, \
-    QLabel
-from PyQt5 import QtCore
+    QLabel, QButtonGroup, QColorDialog
+from PyQt5 import QtCore, QtGui
 from mainwindow import *
 from server_config import *
 from mqtt_client import *
 
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.INFO)
 mqtt = MyMQTTClient()
 mqtt_config = {"Host": "", "Port": 0, "Username": "", "Password": ""}
+
+
+class MySignal(QWidget):
+    trigger = QtCore.pyqtSignal()
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -36,20 +41,160 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.connect_status = QLabel()
         self.connect_status.setText("Disconnected !")
+        self.disconnect = MySignal()
         self.timer_id = None
-        self.topic = "/LED0/Rx"
-        self.msg = "123"
+        self.retry_count = None
+
+        self.led_parameter = {"current_led": "LED0", "led_status": {"LED0": False, "LED1": False, "LED2": False},
+                              "topic": "/LED0/Rx", "brightness": 0, "payload": ""}
+        self.led_str_color = 0
+        self.led_payload = {"Command": "", "Wait_s": 0, "Value": {}}
+
+        self.main_ui.device_select.currentIndexChanged[str].connect(self.set_device)
+        self.main_ui.led_switch.clicked.connect(self.led_switch_control)
+        self.main_ui.brightness_slider.valueChanged[int].connect(self.set_brightness)
+        self.main_ui.brightness_slider.setValue(40)
+        self.mode = QButtonGroup(self)
+        self.mode.addButton(self.main_ui.mode0_select, 0)
+        self.mode.addButton(self.main_ui.mode1_select, 1)
+        self.mode.addButton(self.main_ui.mode2_select, 2)
+        self.mode.buttonClicked.connect(self.mode_select)
+        self.main_ui.customize_display_pb.clicked.connect(self.mode0_display)
+        self.main_ui.str_color_pb.clicked.connect(self.color_dialog)
+        self.effect = None
+        self.main_ui.effect01_pb.clicked.connect(self.mode2_effect01)
+        self.main_ui.effect02_pb.clicked.connect(self.mode2_effect02)
+        self.main_ui.effect03_pb.clicked.connect(self.mode2_effect03)
+        self.main_ui.display_pb.clicked.connect(self.send_cmd)
+
+        self.main_ui.actionReboot.triggered.connect(self.system_reboot)
+        self.main_ui.actionPowerOFF.triggered.connect(self.system_halt)
+        self.main_ui.actionExit.triggered.connect(self.closeapp)
+        self.main_ui.actionHelp.triggered.connect(self.help)
+        self.main_ui.actionAbout.triggered.connect(self.about)
 
         self.main_ui.statusBar.addPermanentWidget(self.connect_status)
-        self.main_ui.display_pb.clicked.connect(self.send_cmd)
-        self.main_ui.actionExit.triggered.connect(QtCore.QCoreApplication.instance().quit)
+
+    def set_device(self, device):
+        device_list = {"LED0": "/LED0/Rx", "LED1": "/LED1/Rx", "LED2": "/LED2/Rx"}
+        self.led_parameter["current_led"] = device
+        self.led_parameter["topic"] = device_list[self.led_parameter["current_led"]]
+        logging.debug(self.led_parameter["topic"])
+        if self.led_parameter["led_status"][self.led_parameter["current_led"]] != self.main_ui.led_switch.isChecked():
+            self.main_ui.led_switch.toggle()
+            if self.led_parameter["led_status"][self.led_parameter["current_led"]]:
+                self.main_ui.led_switch.setText("ON")
+            else:
+                self.main_ui.led_switch.setText("OFF")
+
+    def led_switch_control(self):
+        if self.main_ui.led_switch.isChecked():
+            self.led_parameter["led_status"][self.led_parameter["current_led"]] = True
+            self.main_ui.led_switch.setText("ON")
+            self.led_parameter["payload"] = '''{"Command":"system_control", "Wait_s":0, "Value":{"cmd":"PowerON"}}'''
+        else:
+            self.led_parameter["led_status"][self.led_parameter["current_led"]] = False
+            self.main_ui.led_switch.setText("OFF")
+            self.led_parameter["payload"] = '''{"Command":"system_control", "Wait_s":0, "Value":{"cmd":"PowerOFF"}}'''
+        self.send_cmd()
+
+    def set_brightness(self, value):
+        self.led_parameter["brightness"] = value
+        logging.debug(self.led_parameter["brightness"])
+
+    def mode_select(self):
+        mode_list = ("mode0", "mode1", "mode2")
+        self.led_payload["Command"] = mode_list[self.sender().checkedId()]
+        logging.debug(self.led_payload["Command"])
+
+    def mode0_display(self):
+        QMessageBox.information(self, "Help", "Please wait for developing !", QMessageBox.Ok)
+
+    def color_dialog(self):
+        color = QtGui.QColor(QColorDialog.getColor().name())
+        self.led_str_color = (int(color.red()) * 65536) + (int(color.green()) * 256) + (int(color.blue()))
+        logging.debug(self.led_str_color)
+
+    def mode1_display(self):
+        if self.led_str_color:
+            self.led_payload["Value"] = {"Brightness": self.led_parameter["brightness"],
+                                         "str": self.main_ui.str_input.text(), "color": self.led_str_color}
+        else:
+            self.led_payload["Value"] = {"Brightness": self.led_parameter["brightness"],
+                                         "str": self.main_ui.str_input.text()}
+        self.led_parameter["payload"] = json.dumps(self.led_payload)
+        logging.debug(self.led_parameter["payload"])
+
+    def mode2_effect01(self):
+        if self.main_ui.effect02_pb.isChecked():
+            self.main_ui.effect02_pb.toggle()
+        if self.main_ui.effect03_pb.isChecked():
+            self.main_ui.effect03_pb.toggle()
+        self.effect = "effect01"
+        self.mode2_display()
+
+    def mode2_effect02(self):
+        if self.main_ui.effect01_pb.isChecked():
+            self.main_ui.effect01_pb.toggle()
+        if self.main_ui.effect03_pb.isChecked():
+            self.main_ui.effect03_pb.toggle()
+        self.effect = "effect02"
+        self.mode2_display()
+
+    def mode2_effect03(self):
+        if self.main_ui.effect01_pb.isChecked():
+            self.main_ui.effect01_pb.toggle()
+        if self.main_ui.effect02_pb.isChecked():
+            self.main_ui.effect02_pb.toggle()
+        self.effect = "effect03"
+        self.mode2_display()
+
+    def mode2_display(self):
+        self.led_payload["Value"] = {"Brightness": self.led_parameter["brightness"],
+                                     "effect": self.effect}
+        self.led_parameter["payload"] = json.dumps(self.led_payload)
+        logging.debug(self.led_parameter["payload"])
 
     def send_cmd(self):
         global mqtt
-        reply = mqtt.pub(self.topic, self.msg)
+        if self.led_payload["Command"] == "mode1":
+            self.mode1_display()
+        if self.effect:
+            if self.effect == "effect01":
+                self.main_ui.effect01_pb.toggle()
+            if self.effect == "effect02":
+                self.main_ui.effect02_pb.toggle()
+            if self.effect == "effect03":
+                self.main_ui.effect03_pb.toggle()
+            self.effect = None
+
+        reply = mqtt.pub(self.led_parameter["topic"], self.led_parameter["payload"])
         logging.debug(reply)
 
+    def system_reboot(self):
+        reply = QMessageBox.question(self, "Confirm it !", "The Raspberry Pi will be reboot !",
+                                     QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.led_parameter[
+                "payload"] = '''{"Command":"system_control", "Wait_s":0, "Value":{"cmd":"SystemReboot"}}'''
+            self.send_cmd()
+
+    def system_halt(self):
+        reply = QMessageBox.question(self, "Confirm it !",
+                                     "The Raspberry Pi will be turned off!\r\nYou can't restart the system by this\r\napp until you disconnect the cable\r\nof power and try connect it again !",
+                                     QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.led_parameter["payload"] = '''{"Command":"system_control", "Wait_s":0, "Value":{"cmd":"SystemHalt"}}'''
+            self.send_cmd()
+
+    def help(self):
+        QMessageBox.information(self, "Help", "Please wait for developing !", QMessageBox.Ok)
+
+    def about(self):
+        QMessageBox.information(self, "About", "LEDControlTool - v0.1", QMessageBox.Ok)
+
     def check_connect_status(self):
+        self.connect_status.setText("Connected !")
         self.timer_id = self.startTimer(1000, timerType=QtCore.Qt.VeryCoarseTimer)
 
     def timerEvent(self, event):
@@ -58,9 +203,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if mqtt.check_connection():
                 self.connect_status.setText("Connected !")
             else:
-                self.connect_status.setText("Disconnected !")
+                self.retry_count = self.retry_count + 1
+                if self.retry_count <= 5:
+                    self.connect_status.setText("Disconnected,Retry %d!" % self.retry_count)
+                else:
+                    self.connect_status.setText("Disconnected !")
+                    self.killTimer(self.timer_id)
+                    self.retry_count = 0
+                    self.disconnect.trigger.emit()
         except:
             self.connect_status.setText("Disconnected !")
+            self.killTimer(self.timer_id)
+            self.retry_count = 0
+            self.disconnect.trigger.emit()
+
+    def closeapp(self):
+        global mqtt
+        reply = QMessageBox.question(self, "Confirm it !",
+                                     "If you haven't turn off the LED,\r\nit will keep on working !",
+                                     QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            mqtt.disconnect()
+            QtCore.QCoreApplication.instance().quit()
+
+    def closeEvent(self, event):
+        global mqtt
+        reply = QMessageBox.question(self, "Confirm it !",
+                                     "If you haven't turn off the LED,\r\nit will keep on working !",
+                                     QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            mqtt.disconnect()
+            QtCore.QCoreApplication.instance().quit()
+        else:
+            event.ignore()
 
 
 class ServerConfig(QMainWindow, Ui_ServerConfigDlg):
@@ -68,6 +243,8 @@ class ServerConfig(QMainWindow, Ui_ServerConfigDlg):
         super(ServerConfig, self).__init__()
         self.config_ui = Ui_ServerConfigDlg()
         self.config_ui.setupUi(self)
+
+        self.connected = MySignal()
 
         self.config_ui.connect_pb.clicked.connect(self.connect2mqtt)
 
@@ -87,6 +264,7 @@ class ServerConfig(QMainWindow, Ui_ServerConfigDlg):
                 mqtt_config["Port"] = port
                 mqtt_config["Username"] = username
                 mqtt_config["Password"] = password
+                self.connected.trigger.emit()
                 self.close()
         except Exception as e:
             logging.error(e)
@@ -101,7 +279,8 @@ if __name__ == '__main__':
     server_config = ServerConfig()
 
     main.main_ui.actionServer.triggered.connect(server_config.show)
-    server_config.config_ui.connect_pb.clicked.connect(main.check_connect_status)
+    main.disconnect.trigger.connect(server_config.show)
+    server_config.connected.trigger.connect(main.check_connect_status)
 
     main.show()
     server_config.show()

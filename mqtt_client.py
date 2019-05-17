@@ -17,8 +17,6 @@ import logging.handlers
 import json
 import paho.mqtt.client
 
-logging.getLogger().setLevel(logging.INFO)
-
 
 class MyMQTTClient(object):
     def __init__(self, client_id=""):
@@ -38,17 +36,19 @@ class MyMQTTClient(object):
             logging.error(e)
 
     def check_connection(self):
+        self.pub("/check_status", "")
         if not self._client.socket():
             try:
                 self._client.reconnect()
             except:
                 pass
             finally:
-                logging.debug("Reconnect")
                 return False
         else:
-            logging.debug("Connected")
             return True
+
+    def disconnect(self):
+        return self._client.disconnect()
 
     def connect(self, hostname, port, username="", password=""):
         self._client.username_pw_set(username, password)

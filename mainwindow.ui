@@ -6,12 +6,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>282</width>
+    <width>310</width>
     <height>285</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>310</width>
+    <height>285</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>310</width>
+    <height>285</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>万花筒</string>
+   <string>LEDControlTool</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -26,7 +38,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>271</width>
+      <width>291</width>
       <height>231</height>
      </rect>
     </property>
@@ -35,7 +47,7 @@
       <rect>
        <x>60</x>
        <y>1</y>
-       <width>71</width>
+       <width>121</width>
        <height>21</height>
       </rect>
      </property>
@@ -61,7 +73,7 @@
     <widget class="QPushButton" name="led_switch">
      <property name="geometry">
       <rect>
-       <x>180</x>
+       <x>200</x>
        <y>0</y>
        <width>81</width>
        <height>23</height>
@@ -71,41 +83,44 @@
       <string>ON/OFF switch.</string>
      </property>
      <property name="text">
-      <string>ON</string>
+      <string>OFF</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QLabel" name="device_str">
      <property name="geometry">
       <rect>
-       <x>-4</x>
-       <y>2</y>
-       <width>61</width>
-       <height>20</height>
+       <x>10</x>
+       <y>3</y>
+       <width>71</width>
+       <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Device&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Device&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
     <widget class="QLabel" name="brightness_str">
      <property name="geometry">
       <rect>
-       <x>-4</x>
+       <x>10</x>
        <y>40</y>
        <width>71</width>
        <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Brightness&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Brightness&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
     <widget class="QLabel" name="brightness_dp">
      <property name="geometry">
       <rect>
-       <x>236</x>
+       <x>260</x>
        <y>40</y>
-       <width>31</width>
+       <width>21</width>
        <height>21</height>
       </rect>
      </property>
@@ -116,7 +131,7 @@
     <widget class="QSlider" name="brightness_slider">
      <property name="geometry">
       <rect>
-       <x>69</x>
+       <x>90</x>
        <y>41</y>
        <width>151</width>
        <height>21</height>
@@ -138,7 +153,7 @@
     <widget class="QPushButton" name="effect01_pb">
      <property name="geometry">
       <rect>
-       <x>90</x>
+       <x>120</x>
        <y>160</y>
        <width>41</width>
        <height>31</height>
@@ -150,11 +165,14 @@
      <property name="text">
       <string>01</string>
      </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QPushButton" name="effect02_pb">
      <property name="geometry">
       <rect>
-       <x>150</x>
+       <x>180</x>
        <y>160</y>
        <width>41</width>
        <height>31</height>
@@ -166,11 +184,14 @@
      <property name="text">
       <string>02</string>
      </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QPushButton" name="effect03_pb">
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>240</x>
        <y>160</y>
        <width>41</width>
        <height>31</height>
@@ -182,11 +203,14 @@
      <property name="text">
       <string>03</string>
      </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QPushButton" name="customize_display_pb">
      <property name="geometry">
       <rect>
-       <x>90</x>
+       <x>120</x>
        <y>80</y>
        <width>161</width>
        <height>21</height>
@@ -202,7 +226,7 @@
     <widget class="QLineEdit" name="str_input">
      <property name="geometry">
       <rect>
-       <x>90</x>
+       <x>120</x>
        <y>120</y>
        <width>111</width>
        <height>21</height>
@@ -217,7 +241,7 @@
       <rect>
        <x>10</x>
        <y>165</y>
-       <width>59</width>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -233,7 +257,7 @@
       <rect>
        <x>10</x>
        <y>120</y>
-       <width>59</width>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -249,7 +273,7 @@
       <rect>
        <x>10</x>
        <y>80</y>
-       <width>59</width>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
@@ -263,9 +287,9 @@
     <widget class="QPushButton" name="display_pb">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>50</x>
        <y>200</y>
-       <width>221</width>
+       <width>191</width>
        <height>31</height>
       </rect>
      </property>
@@ -279,7 +303,7 @@
     <widget class="QPushButton" name="str_color_pb">
      <property name="geometry">
       <rect>
-       <x>210</x>
+       <x>240</x>
        <y>120</y>
        <width>41</width>
        <height>23</height>
@@ -292,22 +316,6 @@
       <string>color</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="set_time_pb">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>0</y>
-       <width>31</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="statusTip">
-      <string>Set the timer.</string>
-     </property>
-     <property name="text">
-      <string>...</string>
-     </property>
-    </widget>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -316,7 +324,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>282</width>
+     <width>310</width>
      <height>23</height>
     </rect>
    </property>
@@ -406,7 +414,7 @@
  <connections>
   <connection>
    <sender>brightness_slider</sender>
-   <signal>sliderMoved(int)</signal>
+   <signal>valueChanged(int)</signal>
    <receiver>brightness_dp</receiver>
    <slot>setNum(int)</slot>
    <hints>

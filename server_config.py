@@ -12,6 +12,8 @@ class Ui_ServerConfigDlg(object):
     def setupUi(self, ServerConfigDlg):
         ServerConfigDlg.setObjectName("ServerConfigDlg")
         ServerConfigDlg.resize(260, 165)
+        ServerConfigDlg.setMinimumSize(QtCore.QSize(260, 165))
+        ServerConfigDlg.setMaximumSize(QtCore.QSize(260, 165))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("icon.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         ServerConfigDlg.setWindowIcon(icon)
