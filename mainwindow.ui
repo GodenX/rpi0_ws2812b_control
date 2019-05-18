@@ -27,7 +27,13 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>icon.jpg</normaloff>icon.jpg</iconset>
+    <normaloff>app.ico</normaloff>app.ico</iconset>
+  </property>
+  <property name="iconSize">
+   <size>
+    <width>32</width>
+    <height>32</height>
+   </size>
   </property>
   <property name="tabShape">
    <enum>QTabWidget::Rounded</enum>
@@ -71,6 +77,9 @@
      </item>
     </widget>
     <widget class="QPushButton" name="led_switch">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>200</x>
@@ -285,6 +294,9 @@
      </property>
     </widget>
     <widget class="QPushButton" name="display_pb">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -333,11 +345,8 @@
      <string>File</string>
     </property>
     <addaction name="actionServer"/>
-    <addaction name="actionSave"/>
-    <addaction name="separator"/>
     <addaction name="actionReboot"/>
     <addaction name="actionPowerOFF"/>
-    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menu_help">

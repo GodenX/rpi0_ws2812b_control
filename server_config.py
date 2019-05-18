@@ -11,11 +11,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ServerConfigDlg(object):
     def setupUi(self, ServerConfigDlg):
         ServerConfigDlg.setObjectName("ServerConfigDlg")
+        ServerConfigDlg.setWindowModality(QtCore.Qt.ApplicationModal)
         ServerConfigDlg.resize(260, 165)
         ServerConfigDlg.setMinimumSize(QtCore.QSize(260, 165))
         ServerConfigDlg.setMaximumSize(QtCore.QSize(260, 165))
+        ServerConfigDlg.setFocusPolicy(QtCore.Qt.StrongFocus)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icon.jpg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("app.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         ServerConfigDlg.setWindowIcon(icon)
         self.widget = QtWidgets.QWidget(ServerConfigDlg)
         self.widget.setGeometry(QtCore.QRect(10, 0, 241, 161))
@@ -54,6 +56,7 @@ class Ui_ServerConfigDlg(object):
         self.username_input.setObjectName("username_input")
         self.verticalLayout_3.addWidget(self.username_input)
         self.password_input = QtWidgets.QLineEdit(self.verticalLayoutWidget_3)
+        self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
         self.password_input.setObjectName("password_input")
         self.verticalLayout_3.addWidget(self.password_input)
         self.connect_pb = QtWidgets.QPushButton(self.widget)

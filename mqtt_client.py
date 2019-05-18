@@ -35,17 +35,11 @@ class MyMQTTClient(object):
         except Exception as e:
             logging.error(e)
 
-    def check_connection(self):
-        self.pub("/check_status", "")
-        if not self._client.socket():
-            try:
-                self._client.reconnect()
-            except:
-                pass
-            finally:
-                return False
-        else:
-            return True
+    def reconnect(self):
+        try:
+            self._client.reconnect()
+        except Exception as e:
+            logging.error(e)
 
     def disconnect(self):
         return self._client.disconnect()

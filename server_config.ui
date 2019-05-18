@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>ServerConfigDlg</class>
  <widget class="QDialog" name="ServerConfigDlg">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -22,12 +25,15 @@
     <height>165</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Server Config</string>
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>icon.jpg</normaloff>icon.jpg</iconset>
+    <normaloff>app.ico</normaloff>app.ico</iconset>
   </property>
   <widget class="QWidget" name="widget" native="true">
    <property name="geometry">
@@ -98,7 +104,11 @@
       <widget class="QLineEdit" name="username_input"/>
      </item>
      <item>
-      <widget class="QLineEdit" name="password_input"/>
+      <widget class="QLineEdit" name="password_input">
+       <property name="echoMode">
+        <enum>QLineEdit::Password</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
