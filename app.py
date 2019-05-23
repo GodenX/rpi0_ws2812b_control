@@ -75,18 +75,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.main_ui.led_switch.isChecked():
             self.main_ui.led_switch.setText("ON")
             self.led_parameter[
-                "payload"] = '''{"Command":"system_control","Wait_s":0,"Brightness":%d,"Value":{"cmd":"PowerON"}}''' %\
+                "payload"] = '''{"Command":"system_control","Wait_s":0,"Brightness":%d,"Value":{"cmd":"PowerON"}}''' % \
                              self.led_parameter["brightness"]
         else:
             self.main_ui.led_switch.setText("OFF")
             self.led_parameter[
-                "payload"] = '''{"Command":"system_control","Wait_s":0,"Brightness":%d,"Value":{"cmd":"PowerOFF"}}''' %\
+                "payload"] = '''{"Command":"system_control","Wait_s":0,"Brightness":%d,"Value":{"cmd":"PowerOFF"}}''' % \
                              self.led_parameter["brightness"]
         self.send_cmd()
 
     def set_brightness(self, value):
         self.led_parameter["brightness"] = value
         logging.debug("brightness: %d" % self.led_parameter["brightness"])
+        self.led_parameter["payload"] = '''{"Command":"change_brightness","Brightness":%d}''' % self.led_parameter[
+            "brightness"]
+        self.send_cmd()
 
     def mode0_display(self):
         QMessageBox.information(self, "Help", "Please wait for developing !", QMessageBox.Ok)
