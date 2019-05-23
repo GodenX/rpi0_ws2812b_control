@@ -46,29 +46,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer_id = None
         self.retry_count = 0
 
-        self.led_parameter = {"current_led": "LED0", "led_status": {"LED0": False, "LED1": False, "LED2": False},
-                              "topic": "/LED0/Rx", "brightness": 0, "payload": None}
-        self.led_payload = {"Command": "", "Wait_s": 0, "Value": {}}
-        self.mode_payload = {"mode0": "", "mode1": "", "mode2": ""}
+        self.led_parameter = {"topic": "/LED0/Rx", "brightness": 40, "payload": None}
+        self.led_payload = {"Command": "", "Wait_s": 0, "Brightness": 0, "Value": {}}
+        self.str_color = None
 
-        self.main_ui.device_select.currentIndexChanged[str].connect(self.set_device)
         self.main_ui.led_switch.clicked.connect(self.led_switch_control)
         self.main_ui.brightness_slider.valueChanged[int].connect(self.set_brightness)
         self.main_ui.brightness_slider.setValue(40)
-        self.mode = QButtonGroup(self)
-        self.mode.addButton(self.main_ui.mode0_select, 0)
-        self.mode.addButton(self.main_ui.mode1_select, 1)
-        self.mode.addButton(self.main_ui.mode2_select, 2)
-        self.mode.buttonClicked.connect(self.mode_select)
         self.main_ui.customize_display_pb.clicked.connect(self.mode0_display)
-        self.main_ui.str_input.editingFinished.connect(self.mode1_display)
         self.main_ui.str_color_pb.clicked.connect(self.color_dialog)
+        self.main_ui.str_send_pb.clicked.connect(self.mode1_display)
         self.effect_select = QButtonGroup(self)
         self.effect_select.addButton(self.main_ui.effect01_pb, 3)
         self.effect_select.addButton(self.main_ui.effect02_pb, 4)
         self.effect_select.addButton(self.main_ui.effect03_pb, 5)
         self.effect_select.buttonClicked.connect(self.mode2_display)
-        self.main_ui.display_pb.clicked.connect(self.send_cmd)
 
         self.main_ui.actionReboot.triggered.connect(self.system_reboot)
         self.main_ui.actionPowerOFF.triggered.connect(self.system_halt)
@@ -79,40 +71,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.disconnect.trigger.connect(self.disconnected)
         self.main_ui.statusBar.addPermanentWidget(self.connect_status)
 
-    def set_device(self, device):
-        device_list = {"LED0": "/LED0/Rx", "LED1": "/LED1/Rx", "LED2": "/LED2/Rx"}
-        self.led_parameter["current_led"] = device
-        self.led_parameter["topic"] = device_list[self.led_parameter["current_led"]]
-        logging.debug(self.led_parameter["topic"])
-        if self.led_parameter["led_status"][self.led_parameter["current_led"]] != self.main_ui.led_switch.isChecked():
-            self.main_ui.led_switch.toggle()
-            if self.led_parameter["led_status"][self.led_parameter["current_led"]]:
-                self.main_ui.led_switch.setText("ON")
-            else:
-                self.main_ui.led_switch.setText("OFF")
-
     def led_switch_control(self):
         if self.main_ui.led_switch.isChecked():
-            self.led_parameter["led_status"][self.led_parameter["current_led"]] = True
             self.main_ui.led_switch.setText("ON")
-            self.led_parameter["payload"] = '''{"Command":"system_control", "Wait_s":0, "Value":{"cmd":"PowerON"}}'''
+            self.led_parameter[
+                "payload"] = '''{"Command":"system_control","Wait_s":0,"Brightness":%d,"Value":{"cmd":"PowerON"}}''' %\
+                             self.led_parameter["brightness"]
         else:
-            self.led_parameter["led_status"][self.led_parameter["current_led"]] = False
             self.main_ui.led_switch.setText("OFF")
-            self.led_parameter["payload"] = '''{"Command":"system_control", "Wait_s":0, "Value":{"cmd":"PowerOFF"}}'''
+            self.led_parameter[
+                "payload"] = '''{"Command":"system_control","Wait_s":0,"Brightness":%d,"Value":{"cmd":"PowerOFF"}}''' %\
+                             self.led_parameter["brightness"]
         self.send_cmd()
 
     def set_brightness(self, value):
         self.led_parameter["brightness"] = value
         logging.debug("brightness: %d" % self.led_parameter["brightness"])
-
-    def mode_select(self):
-        mode_list = {"0": "mode0", "1": "mode1", "2": "mode2"}
-        last_mode = self.led_payload["Command"]
-        self.mode_payload[last_mode] = self.led_parameter["payload"]
-        self.led_payload["Command"] = mode_list[str(self.sender().checkedId())]
-        self.led_parameter["payload"] = self.mode_payload[self.led_payload["Command"]]
-        logging.debug(self.led_parameter["payload"])
 
     def mode0_display(self):
         QMessageBox.information(self, "Help", "Please wait for developing !", QMessageBox.Ok)
@@ -120,30 +94,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def color_dialog(self):
         try:
             color = QtGui.QColor(QColorDialog.getColor().name())
-            color_number = (int(color.green()) * 65536) + (int(color.red()) * 256) + (int(color.blue()))
-            self.led_payload["Value"] = {"Brightness": self.led_parameter["brightness"],
-                                         "str": self.main_ui.str_input.text(), "color": color_number}
-            self.led_parameter["payload"] = json.dumps(self.led_payload)
-            logging.debug(self.led_parameter["payload"])
+            self.str_color = (int(color.red()) * 65536) + (int(color.green()) * 256) + (int(color.blue()))
         except Exception as e:
             logging.error(e)
             QMessageBox.warning(self, "Warning", "Color can not be set !", QMessageBox.Ok)
 
     def mode1_display(self):
-        self.led_payload["Value"] = {"Brightness": self.led_parameter["brightness"],
-                                     "str": self.main_ui.str_input.text()}
+        self.led_payload["Command"] = "mode1"
+        self.led_payload["Brightness"] = self.led_parameter["brightness"]
+        if self.str_color is not None:
+            self.led_payload["Value"] = {"str": self.main_ui.str_input.text(), "color": self.str_color}
+        else:
+            self.led_payload["Value"] = {"str": self.main_ui.str_input.text()}
         self.led_parameter["payload"] = json.dumps(self.led_payload)
         logging.debug(self.led_parameter["payload"])
+        self.send_cmd()
 
     def mode2_display(self):
         effect_list = {"3": "effect01", "4": "effect02", "5": "effect03"}
-        self.led_payload["Value"] = {"Brightness": self.led_parameter["brightness"],
-                                     "effect": effect_list[str(self.sender().checkedId())]}
+        self.led_payload["Command"] = "mode2"
+        self.led_payload["Brightness"] = self.led_parameter["brightness"]
+        self.led_payload["Value"] = {"effect": effect_list[str(self.sender().checkedId())]}
         self.led_parameter["payload"] = json.dumps(self.led_payload)
         logging.debug(self.led_parameter["payload"])
+        self.send_cmd()
 
     def send_cmd(self):
-        global mqtt
         if self.led_parameter["payload"]:
             reply = mqtt.pub(self.led_parameter["topic"], self.led_parameter["payload"])
             logging.debug("Publish result code: %s" % reply)
@@ -178,12 +154,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.connect_status.setText("Connected !")
         self.timer_id = self.startTimer(5000, timerType=QtCore.Qt.VeryCoarseTimer)
         self.main_ui.led_switch.setEnabled(True)
-        self.main_ui.display_pb.setEnabled(True)
 
     def disconnected(self):
         QMessageBox.warning(self, "Warning", "Lose the connection with server !", QMessageBox.Ok)
         self.main_ui.led_switch.setEnabled(False)
-        self.main_ui.display_pb.setEnabled(False)
 
     def timerEvent(self, event):
         global mqtt
