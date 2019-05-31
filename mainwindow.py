@@ -8,7 +8,6 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -29,6 +28,7 @@ class Ui_MainWindow(object):
         self.led_switch.setEnabled(False)
         self.led_switch.setGeometry(QtCore.QRect(230, 12, 51, 23))
         self.led_switch.setCheckable(True)
+        self.led_switch.setChecked(True)
         self.led_switch.setObjectName("led_switch")
         self.brightness_str = QtWidgets.QLabel(self.widget)
         self.brightness_str.setGeometry(QtCore.QRect(10, 12, 61, 21))
@@ -119,7 +119,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "LEDControlTool"))
         self.led_switch.setStatusTip(_translate("MainWindow", "ON/OFF switch."))
-        self.led_switch.setText(_translate("MainWindow", "OFF"))
+        self.led_switch.setText(_translate("MainWindow", "ON"))
         self.brightness_str.setText(_translate("MainWindow", "<html><head/><body><p>Brightness</p></body></html>"))
         self.brightness_dp.setText(_translate("MainWindow", "0"))
         self.brightness_slider.setStatusTip(_translate("MainWindow", "Change the brightness."))
@@ -155,3 +155,4 @@ class Ui_MainWindow(object):
         self.actionAbout.setStatusTip(_translate("MainWindow", "About."))
         self.actionSave.setText(_translate("MainWindow", "Save"))
         self.actionSave.setStatusTip(_translate("MainWindow", "Save the config."))
+

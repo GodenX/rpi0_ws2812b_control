@@ -64,9 +64,12 @@
       <string>ON/OFF switch.</string>
      </property>
      <property name="text">
-      <string>OFF</string>
+      <string>ON</string>
      </property>
      <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
       <bool>true</bool>
      </property>
     </widget>

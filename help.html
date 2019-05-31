@@ -4,20 +4,24 @@
 
 <h3>一、功能说明</h3>
 
-<h4>1.1主窗口</h4>
+<h4>1.1 主窗口</h4>
 
-<ul><li><p><strong>Device:</strong> 通过下拉菜单选择需要控制的设备</p></li><li><p><strong>ON/OFF:</strong> 打开和关闭LED</p></li><li><p><strong>Brightness:</strong> 修改Mode0和Mode1的显示亮度</p></li><li><p><strong>Mode0/Mode1/Mode2:</strong> 修改显示模式</p><ul><li><p><em>Mode0:</em> 通过Customize Display按钮自定义位置显示自定义颜色和亮度</p></li><li><p><em>Mode1:</em> 显示一次字符串，通过color设置显示颜色</p></li><li><p><em>Mode2:</em> 显示预设效果：</p><ul><li><p>01: 随机颜色显示字符串“HELLO”</p></li><li><p>02: 随机位置显示随机颜色，呼吸灯效果</p></li><li><p>03: 随机颜色滚动显示</p></li></ul></li></ul></li><li><p><strong>Display:</strong> 发送指令</p></li></ul>
+<ul><li><p><strong>Device:</strong> 通过下拉菜单选择需要控制的设备</p></li><li><p><strong>ON/OFF:</strong> 打开和关闭LED</p></li><li><p><strong>Brightness:</strong> 修改Mode0和Mode1的显示亮度</p></li><li><p><strong>Mode0/Mode1/Mode2:</strong> 修改显示模式</p><ul><li><p><em>Mode0:</em> 通过Customize Display按钮自定义位置显示自定义颜色和亮度</p></li><li><p><em>Mode1:</em> 显示一次字符串，通过color设置显示颜色，send发送命令</p></li><li><p><em>Mode2:</em> 显示预设效果：</p><ul><li><p>01: 随机颜色显示字符串“HELLO”</p></li><li><p>02: 随机位置显示随机颜色，呼吸灯效果</p></li><li><p>03: 随机颜色滚动显示</p></li></ul></li></ul></li><li><p><strong>Display:</strong> 发送指令</p></li></ul>
 
-<h4>1.2菜单项</h4>
+<h4>1.2 菜单项</h4>
 
 <ul><li><p><strong>File - Server Config:</strong> 弹出服务器连接的设置，用于重新连接服务器或更换服务器，每次成功连接后都会将连接设置保存到server.conf文件中</p></li><li><p><strong>File - System Reboot:</strong> 重启树莓派，用于更新服务器端程序</p></li><li><p><strong>File - PowerOFF:</strong> 软关闭树莓派，由于执行此指令后将无法通过本软件再次重启树莓派，所以慎重使用。当使用此指令后只能通过对树莓派的断电并重新上电来再次启动系统</p></li><li><p><strong>File - Exit:</strong> 退出程序，LED依旧保持运行状态</p></li><li><p><strong>Help - Help:</strong> 帮助文档</p></li><li><p><strong>Help - About:</strong> 版本信息</p></li></ul>
 
 <h3>二、使用说明</h3>
 
-<ul><li><p>通过登陆窗口输入设备的IP地址和端口，如果连接成功，则自动跳转到主控窗口  </p></li><li><p>通过下拉菜单选择设备  </p></li><li><p>点击ON按钮打开设备  </p></li><li><p>通过单选按钮选择模式  </p></li><li><p>对应模式的显示内容  </p></li><li><p>点击Display按钮发送指令，完成一次控制  </p></li></ul>
+<ul><li><p>通过登陆窗口输入设备的IP地址和端口，如果连接成功，则自动跳转到主控窗口  </p></li><li><p>如果LED处于关闭状态，则单击OFF按钮，打开设备  </p></li><li><p>选择显示模式</p></li></ul>
 
 <p><strong>P.S.</strong> 如果在使用过程中断开连接，软件会自动进行3次重连，依旧无法连接则会弹出服务器连接对话框用于重连设置。</p>
 
+<h3>三、更新日志:</h3>
+
+<ul><li><p>v0.3(2019.05.31):</p><ul><li>修改UI界面，简化操作</li><li>更新帮助文档</li><li><p>修复部分BUG</p></li></ul></li><li><p>v0.2(2019.05.18):</p><ul><li>添加帮助文档</li><li><p>修复部分BUG</p></li></ul></li><li><p>v0.1(2019.05.17):</p><ul><li>新增对MQTT通讯的支持</li><li>新增说明文档</li></ul></li></ul>
+
 <p><strong>Enjoy it!</strong>  </p>
 
-<p>Jackie Yang<br/>2019.05.18</p>
+<p>Jackie Yang<br/><a href="mailto:czyangyinghao@163.com">czyangyinghao@163.com</a>  </p>

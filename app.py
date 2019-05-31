@@ -27,7 +27,7 @@ import mqtt_client
 
 logging.getLogger().setLevel(logging.DEBUG)
 mqtt = mqtt_client.MyMQTTClient()
-version = "v0.2"
+version = "v0.3"
 
 
 class MySignal(QWidget):
@@ -46,7 +46,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer_id = None
         self.retry_count = 0
 
-        self.led_parameter = {"topic": "/LED0/Rx", "brightness": 40, "payload": None}
+        self.led_parameter = {"topic": "/LED/Rx", "brightness": 40, "payload": None}
         self.led_payload = {"Command": "", "Wait_s": 0, "Brightness": 0, "Value": {}}
         self.str_color = None
 
