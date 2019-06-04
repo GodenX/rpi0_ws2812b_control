@@ -183,8 +183,8 @@
       <rect>
        <x>70</x>
        <y>52</y>
-       <width>211</width>
-       <height>21</height>
+       <width>151</width>
+       <height>23</height>
       </rect>
      </property>
      <property name="statusTip">
@@ -276,6 +276,19 @@
      </property>
      <property name="text">
       <string>send</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="Light_pb">
+     <property name="geometry">
+      <rect>
+       <x>230</x>
+       <y>52</y>
+       <width>51</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Light</string>
      </property>
     </widget>
    </widget>

@@ -54,6 +54,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.main_ui.brightness_slider.valueChanged[int].connect(self.set_brightness)
         self.main_ui.brightness_slider.setValue(40)
         self.main_ui.customize_display_pb.clicked.connect(self.mode0_display)
+        self.main_ui.Light_pb.clicked.connect(self.lightness)
         self.main_ui.str_color_pb.clicked.connect(self.color_dialog)
         self.main_ui.str_send_pb.clicked.connect(self.mode1_display)
         self.effect_select = QButtonGroup(self)
@@ -118,6 +119,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.led_payload["Command"] = "mode2"
         self.led_payload["Brightness"] = self.led_parameter["brightness"]
         self.led_payload["Value"] = {"effect": effect_list[str(self.sender().checkedId())]}
+        self.led_parameter["payload"] = json.dumps(self.led_payload)
+        logging.debug(self.led_parameter["payload"])
+        self.send_cmd()
+
+    def lightness(self):
+        self.led_payload["Command"] = "mode2"
+        self.led_payload["Brightness"] = self.led_parameter["brightness"]
+        self.led_payload["Value"] = {"effect": "effect04"}
         self.led_parameter["payload"] = json.dumps(self.led_payload)
         logging.debug(self.led_parameter["payload"])
         self.send_cmd()
