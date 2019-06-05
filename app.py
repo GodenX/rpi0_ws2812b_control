@@ -143,7 +143,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.led_parameter[
-                "payload"] = '''{"Command":"system_control", "Wait_s":0, "Value":{"cmd":"SystemReboot"}}'''
+                "payload"] = '''{"Command":"system_control", "Wait_s":0, "Brightness":0,"Value":{"cmd":"SystemReboot"}}'''
             self.send_cmd()
 
     def system_halt(self):
@@ -151,7 +151,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                      "The Raspberry Pi will be turned off !\r\nTo restart it , you should disconnect\r\nthe cable of power , then connect it\r\n again !",
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
-            self.led_parameter["payload"] = '''{"Command":"system_control", "Wait_s":0, "Value":{"cmd":"SystemHalt"}}'''
+            self.led_parameter[
+                "payload"] = '''{"Command":"system_control", "Wait_s":0, "Brightness":0,"Value":{"cmd":"SystemHalt"}}'''
             self.send_cmd()
 
     def help(self):
