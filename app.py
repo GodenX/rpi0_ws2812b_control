@@ -23,11 +23,14 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QStyleFactory, QWidget, Q
 from PyQt5 import QtCore, QtGui
 from mainwindow import *
 from server_config import *
+from mode0 import *
 import mqtt_client
+from functools import partial
 
 logging.getLogger().setLevel(logging.DEBUG)
 mqtt = mqtt_client.MyMQTTClient()
-version = "v0.3"
+version = "v0.4"
+led_brightness = 48
 
 
 class MySignal(QWidget):
@@ -46,22 +49,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer_id = None
         self.retry_count = 0
 
-        self.led_parameter = {"topic": "/LED/Rx", "brightness": 40, "payload": None}
+        self.led_parameter = {"topic": "/LED/Rx", "brightness": 48, "payload": None}
         self.led_payload = {"Command": "", "Wait_s": 0, "Brightness": 0, "Value": {}}
         self.str_color = None
 
         self.main_ui.led_switch.clicked.connect(self.led_switch_control)
+        self.main_ui.brightness_slider.setValue(48)
         self.main_ui.brightness_slider.valueChanged[int].connect(self.set_brightness)
-        self.main_ui.brightness_slider.setValue(40)
-        self.main_ui.customize_display_pb.clicked.connect(self.mode0_display)
+        # self.main_ui.customize_display_pb.clicked.connect(self.mode0_display)
         self.main_ui.Light_pb.clicked.connect(self.lightness)
         self.main_ui.str_color_pb.clicked.connect(self.color_dialog)
         self.main_ui.str_send_pb.clicked.connect(self.mode1_display)
-        self.effect_select = QButtonGroup(self)
-        self.effect_select.addButton(self.main_ui.effect01_pb, 3)
-        self.effect_select.addButton(self.main_ui.effect02_pb, 4)
-        self.effect_select.addButton(self.main_ui.effect03_pb, 5)
-        self.effect_select.buttonClicked.connect(self.mode2_display)
+        self.main_ui.effect01_pb.clicked.connect(self.mode2_effect01_display)
+        self.main_ui.effect02_pb.clicked.connect(self.mode2_effect02_display)
+        self.main_ui.effect03_pb.clicked.connect(self.mode2_effect03_display)
 
         self.main_ui.actionReboot.triggered.connect(self.system_reboot)
         self.main_ui.actionPowerOFF.triggered.connect(self.system_halt)
@@ -86,7 +87,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.send_cmd()
 
     def set_brightness(self, value):
+        global led_brightness
         self.led_parameter["brightness"] = value
+        led_brightness = self.led_parameter["brightness"]
         logging.debug("brightness: %d" % self.led_parameter["brightness"])
         self.led_parameter["payload"] = '''{"Command":"change_brightness","Brightness":%d}''' % self.led_parameter[
             "brightness"]
@@ -114,19 +117,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         logging.debug(self.led_parameter["payload"])
         self.send_cmd()
 
-    def mode2_display(self):
-        effect_list = {"3": "effect01", "4": "effect02", "5": "effect03"}
+    def mode2_effect01_display(self):
         self.led_payload["Command"] = "mode2"
         self.led_payload["Brightness"] = self.led_parameter["brightness"]
-        self.led_payload["Value"] = {"effect": effect_list[str(self.sender().checkedId())]}
+        self.led_payload["Value"] = {"effect": "effect01"}
+        self.led_parameter["payload"] = json.dumps(self.led_payload)
+        logging.debug(self.led_parameter["payload"])
+        self.send_cmd()
+
+    def mode2_effect02_display(self):
+        self.led_payload["Command"] = "mode2"
+        self.led_payload["Brightness"] = self.led_parameter["brightness"]
+        self.led_payload["Value"] = {"effect": "effect02"}
+        self.led_parameter["payload"] = json.dumps(self.led_payload)
+        logging.debug(self.led_parameter["payload"])
+        self.send_cmd()
+
+    def mode2_effect03_display(self):
+        self.led_payload["Command"] = "mode2"
+        self.led_payload["Brightness"] = self.led_parameter["brightness"]
+        self.led_payload["Value"] = {"effect": "effect03"}
         self.led_parameter["payload"] = json.dumps(self.led_payload)
         logging.debug(self.led_parameter["payload"])
         self.send_cmd()
 
     def lightness(self):
-        self.led_payload["Command"] = "mode2"
+        self.led_payload["Command"] = "lightning"
         self.led_payload["Brightness"] = self.led_parameter["brightness"]
-        self.led_payload["Value"] = {"effect": "effect04"}
+        self.led_payload["Value"] = {}
         self.led_parameter["payload"] = json.dumps(self.led_payload)
         logging.debug(self.led_parameter["payload"])
         self.send_cmd()
@@ -217,6 +235,132 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             event.ignore()
 
 
+class Mode0Window(QMainWindow, Ui_Mode0Dlg):
+    def __init__(self):
+        super(Mode0Window, self).__init__()
+        self.mode0_ui = Ui_Mode0Dlg()
+        self.mode0_ui.setupUi(self)
+
+        self.led_parameter = {"topic": "/LED/Rx", "brightness": 48, "payload": None}
+        self.led_payload = {"Command": "mode0", "Wait_s": 0, "Brightness": 0, "Value": {}}
+        self.str_color = (0, 0, 0, 0)
+        self.fill_color = dict()
+
+        self.button = dict()
+        for i in range(0, 100):
+            button_name = "self.mode0_ui.pushButton_" + str("%02d" % i)
+            self.button[i] = compile(button_name, 'app.py', 'eval')
+            push_button = eval(self.button[i])
+            push_button.clicked.connect(partial(self.display, push_button.objectName()))
+        self.mode0_ui.pushButton_all.clicked.connect(self.check_all)
+        self.mode0_ui.pushButton_filling.clicked.connect(self.filling)
+        self.mode0_ui.pushButton_clear.clicked.connect(self.clear)
+        self.mode0_ui.pushButton_color.clicked.connect(self.color_dialog)
+
+    def display(self, addr):
+        push_button = eval(self.button[int(addr[-2:])])
+        if self.str_color[0] == 0:
+            if int(addr[-2:]) in self.fill_color:
+                del self.fill_color[int(addr[-2:])]
+            push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (255, 255, 255))
+        elif self.str_color[0] == 16777215:
+            self.fill_color[int(addr[-2:])] = True
+            push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (0, 0, 0))
+        else:
+            self.fill_color[int(addr[-2:])] = True
+            push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (
+                self.str_color[1], self.str_color[2], self.str_color[3]))
+        self.led_payload["Command"] = "mode0"
+        self.led_payload["Brightness"] = led_brightness
+        self.led_payload["Value"] = {str(int(addr[-2:])): self.str_color[0]}
+        self.led_parameter["payload"] = json.dumps(self.led_payload)
+        logging.debug(self.led_parameter["payload"])
+        self.send_cmd()
+
+    def color_dialog(self):
+        try:
+            color = QtGui.QColor(QColorDialog.getColor().name())
+            self.str_color = (
+                (int(color.red()) * 65536) + (int(color.green()) * 256) + (int(color.blue())), int(color.red()),
+                int(color.green()), int(color.blue()))
+            if self.str_color[0] == 0:
+                self.mode0_ui.pushButton_color.setStyleSheet("QPushButton{color:black}"
+                                                             "QPushButton{background-color:rgb(%d,%d,%d)}" % (
+                                                                 255, 255, 255))
+            elif self.str_color[0] == 16777215:
+                self.mode0_ui.pushButton_color.setStyleSheet("QPushButton{color:white}"
+                                                             "QPushButton{background-color:rgb(%d,%d,%d)}" % (0, 0, 0))
+            else:
+                self.mode0_ui.pushButton_color.setStyleSheet("QPushButton{color:black}"
+                                                             "QPushButton{background-color:rgb(%d,%d,%d)}" % (
+                                                                 int(color.red()), int(color.green()),
+                                                                 int(color.blue())))
+        except Exception as e:
+            logging.error(e)
+            QMessageBox.warning(self, "Warning", "Color can not be set !", QMessageBox.Ok)
+
+    def check_all(self):
+        for i in range(0, 100):
+            push_button = eval(self.button[i])
+            if self.str_color[0] == 0:
+                self.fill_color = dict()
+                push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (255, 255, 255))
+            elif self.str_color[0] == 16777215:
+                self.fill_color = {x: True for x in range(0, 100)}
+                push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (0, 0, 0))
+            else:
+                self.fill_color = {x: True for x in range(0, 100)}
+                push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (
+                    self.str_color[1], self.str_color[2], self.str_color[3]))
+        self.led_payload["Command"] = "solid_color"
+        self.led_payload["Brightness"] = led_brightness
+        self.led_payload["Value"] = {"color": self.str_color[0]}
+        self.led_parameter["payload"] = json.dumps(self.led_payload)
+        logging.debug(self.led_parameter["payload"])
+        self.send_cmd()
+
+    def filling(self):
+        self.led_payload["Value"] = {}
+        for i in range(0, 100):
+            if i not in self.fill_color:
+                push_button = eval(self.button[i])
+                if self.str_color[0] == 0:
+                    push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (255, 255, 255))
+                elif self.str_color[0] == 16777215:
+                    self.fill_color[i] = True
+                    push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (0, 0, 0))
+                else:
+                    self.fill_color[i] = True
+                    push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (
+                        self.str_color[1], self.str_color[2], self.str_color[3]))
+                self.led_payload["Value"][i] = self.str_color[0]
+        self.led_payload["Command"] = "mode0"
+        self.led_payload["Brightness"] = led_brightness
+        self.led_parameter["payload"] = json.dumps(self.led_payload)
+        logging.debug(self.led_parameter["payload"])
+        self.send_cmd()
+
+    def clear(self):
+        self.fill_color = dict()
+        for i in range(0, 100):
+            push_button = eval(self.button[i])
+            push_button.setStyleSheet("QPushButton{background-color:rgb(%d,%d,%d)}" % (
+                255, 255, 255))
+        self.led_payload["Command"] = "solid_color"
+        self.led_payload["Brightness"] = led_brightness
+        self.led_payload["Value"] = {"color": 0}
+        self.led_parameter["payload"] = json.dumps(self.led_payload)
+        logging.debug(self.led_parameter["payload"])
+        self.send_cmd()
+
+    def send_cmd(self):
+        if self.led_parameter["payload"]:
+            reply = mqtt.pub(self.led_parameter["topic"], self.led_parameter["payload"])
+            logging.debug("Publish result code: %s" % reply)
+        else:
+            QMessageBox.warning(self, "Error", "No message can be send !", QMessageBox.Ok)
+
+
 class ServerConfig(QMainWindow, Ui_ServerConfigDlg):
     def __init__(self):
         super(ServerConfig, self).__init__()
@@ -279,8 +423,10 @@ if __name__ == '__main__':
 
     main = MainWindow()
     server_config = ServerConfig()
+    mode0 = Mode0Window()
 
     main.main_ui.actionServer.triggered.connect(server_config.show_window)
+    main.main_ui.customize_display_pb.clicked.connect(mode0.show)
     main.disconnect.trigger.connect(server_config.show_window)
     server_config.connected.trigger.connect(main.check_connect_status)
 
